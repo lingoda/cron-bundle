@@ -1,0 +1,9 @@
+/vendor/
+/var/
+composer.lock
+phpunit.xml
+.phpunit.result.cache
+.idea
+.DS_Store
+.phpstan-cache
+

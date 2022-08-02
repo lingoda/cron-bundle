@@ -1,0 +1,6 @@
+includes:
+    - phpstan.common.neon
+parameters:
+    resultCachePath: %tmpDir%/resultCache-src.php
+    paths:
+        - src
