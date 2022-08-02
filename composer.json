@@ -2,8 +2,7 @@
     "name": "lingoda/cron-bundle",
     "description": "Lingoda cron bundle",
     "type": "symfony-bundle",
-    "license": "proprietary",
-    "version": "1.2",
+    "license": "MIT",
     "require": {
         "php": "^8.1",
         "ext-pcntl": "*",
