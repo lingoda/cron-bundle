@@ -9,7 +9,7 @@
         "ext-zip": "*",
         "ext-zlib": "*",
         "doctrine/annotations": "^1.14",
-        "doctrine/orm": "^2.19",
+        "doctrine/orm": "^2.10",
         "dragonmantank/cron-expression": "^3.3",
         "lorisleiva/cron-translator": "^0.4.5",
         "nesbot/carbon": "^2.72",
