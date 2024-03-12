@@ -7,6 +7,7 @@ namespace Lingoda\CronBundle\Command;
 use Exception;
 use Lingoda\CronBundle\Cron\CronJobInterface;
 use Lingoda\CronBundle\Cron\CronJobRunner;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,11 +16,13 @@ use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webmozart\Assert\Assert;
 
+#[AsCommand(
+    name: 'lg:cron:run-job',
+    description: 'Run a single cron job',
+)]
 class RunCronJobCommand extends Command
 {
     private const ARG_CRON_JOB_ID = 'cron-job-id';
-
-    protected static $defaultName = 'lg:cron:run-job';
 
     private CronJobRunner $cronJobRunner;
     private string $cronJobId;
@@ -40,7 +43,7 @@ class RunCronJobCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $id = $input->getArgument(self::ARG_CRON_JOB_ID);
         $this->setCronJobId($id);
@@ -59,7 +62,7 @@ class RunCronJobCommand extends Command
     /**
      * @param string|string[]|null $id
      */
-    private function setCronJobId($id): void
+    private function setCronJobId(array|string|null $id): void
     {
         Assert::string($id);
         Assert::classExists($id);

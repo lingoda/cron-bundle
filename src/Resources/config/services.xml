@@ -26,6 +26,12 @@
             <argument type="service" id="lingoda_cron.cron_job_runner" />
         </service>
 
+        <service id="Lingoda\CronBundle\Command\ListCronJobsCommand">
+            <tag name="console.command" />
+            <argument type="tagged_iterator" tag="lingoda_cron.cron_job" />
+            <argument type="service" id="lingoda_cron.cron_job_start_time_repository" />
+        </service>
+
         <service id="lingoda_cron.cron_job_runner" class="Lingoda\CronBundle\Cron\CronJobRunner">
             <argument type="tagged_locator" tag="lingoda_cron.cron_job" />
             <argument type="service" id="lock.default.factory" />

@@ -32,4 +32,9 @@ abstract class PostDeploymentJob implements CronJobInterface
     {
         return self::DEFAULT_LOCK_TTL;
     }
+
+    public function __toString(): string
+    {
+        return '';
+    }
 }

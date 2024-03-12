@@ -4,23 +4,26 @@ declare(strict_types = 1);
 
 namespace Lingoda\CronBundle\Command;
 
-use Lingoda\CronBundle\Console\Command\SignalableCommandInterface;
 use Lingoda\CronBundle\Cron\DueCronJobsTrigger;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
+use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webmozart\Assert\Assert;
 
+#[AsCommand(
+    name: 'lg:cron:trigger-due-jobs',
+    description: 'Trigger due cron jobs',
+)]
 class TriggerDueCronJobsCommand extends Command implements SignalableCommandInterface
 {
     use LockableTrait;
 
     private const SLEEP_SECONDS = 60;
-
-    protected static $defaultName = 'lg:cron:trigger-due-jobs';
 
     private DueCronJobsTrigger $dueCronJobsTrigger;
     private bool $shouldStop = false;
@@ -39,12 +42,14 @@ class TriggerDueCronJobsCommand extends Command implements SignalableCommandInte
         return [\SIGTERM];
     }
 
-    public function handleSignal(int $signal): void
+    public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
     {
         if (\SIGTERM === $signal) {
             $this->shouldStop = true;
             $this->dueCronJobsTrigger->stop();
         }
+
+        return $signal;
     }
 
     protected function configure(): void
