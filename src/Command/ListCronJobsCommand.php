@@ -82,7 +82,7 @@ class ListCronJobsCommand extends Command
             $nextTriggerAt = $cronJob['next_trigger_at'];
             $table->addRow([
                 $cronJob['id'],
-                $schedule ? CronTranslator::translate($schedule) : '-',
+                $this->translateCronExpression($schedule),
                 $lastTriggeredAt ? $lastTriggeredAt->format(self::FORMAT) : '-',
                 $nextTriggerAt ? $nextTriggerAt->format(self::FORMAT) : '-',
             ]);
@@ -90,5 +90,18 @@ class ListCronJobsCommand extends Command
         $table->render();
 
         return Command::SUCCESS;
+    }
+
+    private function translateCronExpression(?string $expression): string
+    {
+        if (!$expression) {
+            return '-';
+        }
+
+        try {
+            return CronTranslator::translate($expression);
+        } catch (CronParsingException) {
+            return $expression;
+        }
     }
 }
