@@ -20,5 +20,10 @@ abstract class ScheduleBasedCronJob implements CronJobInterface
         return self::DEFAULT_LOCK_TTL;
     }
 
-    abstract protected function getSchedule(): Schedule;
+    public function __toString(): string
+    {
+        return (string) $this->getSchedule();
+    }
+
+    abstract public function getSchedule(): Schedule;
 }

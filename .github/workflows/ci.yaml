@@ -41,10 +41,11 @@ jobs:
           restore-keys: |
             phpstan-${{ github.ref }}-
             phpstan-
+
       - name: phpstan
         run: |
           vendor/bin/phpstan analyze -c ./phpstan.neon
           vendor/bin/phpstan analyze -c ./phpstan.test.neon
+
       - name: phpunit
-        run: |
-          vendor/bin/phpunit
+        run: vendor/bin/phpunit

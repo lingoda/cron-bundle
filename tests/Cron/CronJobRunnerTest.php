@@ -18,7 +18,7 @@ use Lingoda\CronBundle\Repository\CronDatesRepository;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\LockInterface;
+use Symfony\Component\Lock\SharedLockInterface;
 
 class CronJobRunnerTest extends TestCase
 {
@@ -28,23 +28,14 @@ class CronJobRunnerTest extends TestCase
 
         $cronJobId = 'My\Dummy\CronJob';
 
-        $locator = $this->getMockBuilder(ContainerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $locator = $this->createMock(ContainerInterface::class);
         $locator
             ->method('has')
             ->willReturn(false)
         ;
 
-        $lockFactory = $this->getMockBuilder(LockFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $repository = $this->getMockBuilder(CronDatesRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $lockFactory = $this->createMock(LockFactory::class);
+        $repository = $this->createMock(CronDatesRepository::class);
 
         $runner = new CronJobRunner($locator, $lockFactory, $repository);
         $runner->run($cronJobId);
@@ -57,10 +48,7 @@ class CronJobRunnerTest extends TestCase
         $cronJob = $this->createCronJob();
         $cronJobId = \get_class($cronJob);
 
-        $locator = $this->getMockBuilder(ContainerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $locator = $this->createMock(ContainerInterface::class);
         $locator
             ->method('has')
             ->willReturn(true)
@@ -70,28 +58,19 @@ class CronJobRunnerTest extends TestCase
             ->willReturn($cronJob)
         ;
 
-        $lock = $this->getMockBuilder(LockInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $lock = $this->createMock(SharedLockInterface::class);
         $lock
             ->method('acquire')
             ->willReturn(false)
         ;
 
-        $lockFactory = $this->getMockBuilder(LockFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $lockFactory = $this->createMock(LockFactory::class);
         $lockFactory->expects($this->once())
             ->method('createLock')
             ->willReturn($lock)
         ;
 
-        $repository = $this->getMockBuilder(CronDatesRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $repository = $this->createMock(CronDatesRepository::class);
 
         $runner = new CronJobRunner($locator, $lockFactory, $repository);
         $runner->run($cronJobId);
@@ -102,10 +81,7 @@ class CronJobRunnerTest extends TestCase
         $cronJob = $this->createCronJob();
         $cronJobId = \get_class($cronJob);
 
-        $locator = $this->getMockBuilder(ContainerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $locator = $this->createMock(ContainerInterface::class);
         $locator
             ->method('has')
             ->willReturn(true)
@@ -115,10 +91,7 @@ class CronJobRunnerTest extends TestCase
             ->willReturn($cronJob)
         ;
 
-        $lock = $this->getMockBuilder(LockInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $lock = $this->createMock(SharedLockInterface::class);
         $lock->method('acquire')
             ->willReturn(true)
         ;
@@ -127,18 +100,12 @@ class CronJobRunnerTest extends TestCase
             ->method('release')
         ;
 
-        $lockFactory = $this->getMockBuilder(LockFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $lockFactory = $this->createMock(LockFactory::class);
         $lockFactory->method('createLock')
             ->willReturn($lock)
         ;
 
-        $repository = $this->getMockBuilder(CronDatesRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $repository = $this->createMock(CronDatesRepository::class);
         $repository->expects($this->once())
             ->method('find')
             ->with($cronJobId)
@@ -162,7 +129,7 @@ class CronJobRunnerTest extends TestCase
         $locator->method('has')->willReturn(true);
         $locator->method('get')->willReturn($cronJob);
 
-        $lock = $this->createMock(LockInterface::class);
+        $lock = $this->createMock(SharedLockInterface::class);
         $lock->method('acquire')->willReturn(true);
         $lock->expects(self::exactly(2))->method('release');
 
@@ -192,7 +159,7 @@ class CronJobRunnerTest extends TestCase
         $locator->method('has')->willReturn(true);
         $locator->method('get')->willReturn($cronJob);
 
-        $lock = $this->createMock(LockInterface::class);
+        $lock = $this->createMock(SharedLockInterface::class);
         $lock->method('acquire')->willReturn(true);
         $lock->expects(self::once())->method('release');
 

@@ -6,7 +6,7 @@ namespace Lingoda\CronBundle\Cron;
 
 use DateTimeInterface;
 
-interface CronJobInterface
+interface CronJobInterface extends \Stringable
 {
     public const DEFAULT_LOCK_TTL = 6 * 60 * 60 * 1.0;
 

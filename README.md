@@ -4,13 +4,17 @@ This bundle allows scheduling of jobs that will execute in a different process t
 
 ## How to use
 
-Either extend the ScheduleBaseCronJob abstract class or implement CronJobInterface. These will automatically be recognized by your Symfony application. Then there's nothing left to do than execute the command `bin/console lg:cron:trigger-due-jobs`. This will send a message on the application's messenger bus for each recognized cron job that is due. Usually, this means that a message will be put on some sort of a queue which will then be picked up by a handler which will actually run the job
+Either extend the `ScheduleBaseCronJob` abstract class or implement the `CronJobInterface` interface. These will automatically be recognized by your Symfony application. Then there's nothing left to do than execute the command `bin/console lg:cron:trigger-due-jobs`. This will send a message on the application's messenger bus for each recognized cron job that is due. Usually, this means that a message will be put on some sort of a queue which will then be picked up by a handler which will actually run the job.
 
 When implementing a cron job, you shall not expect the cron to actually run at the scheduled times.
-
 -   The queue might be unavailable or overloaded, and you can't predict the delay
 -   The actual previous run time will be passed to your run method. Use it!
 -   The job might be run manually. Or it might have been run manually previously. Even multiple times.
+
+#### Triggering individual jobs
+```bash
+bin/console lg:cron:run-job App\\Cron\\SomeCronJobImplementation
+```
 
 ## Examples
 
@@ -55,6 +59,12 @@ class MyCronJob implements CronJobInterface
         // the job can specify a custom expiry period in seconds for the lock
 
         return 30.0;
+    }
+    
+    public function __toString(): string
+    {
+        // Here comes the cron expression as string, e.g. 30 1 * * *
+        return '30 1 * * *';
     }
 }
 ```

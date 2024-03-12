@@ -24,10 +24,8 @@ use Symfony\Component\Console\Output\NullOutput;
 final class RunCronJobInputDefinitionDecoratorTest extends TestCase
 {
     private const COMMAND = 'lg:cron:run-job';
-    /**
-     * @var MockObject|ContainerInterface
-     */
-    private $mockCronJobLocator;
+
+    private MockObject&ContainerInterface $mockCronJobLocator;
     private RunCronJobInputDefinitionDecorator $listener;
 
     protected function setUp(): void
@@ -188,9 +186,9 @@ final class RunCronJobInputDefinitionDecoratorTest extends TestCase
     /**
      * @param class-string<Command> $commandClass
      *
-     * @return MockObject|Command
+     * @return MockObject&Command
      */
-    private function createCommand(string $commandName, string $commandClass = Command::class)
+    private function createCommand(string $commandName, string $commandClass = Command::class): MockObject
     {
         $command = $this->createMock($commandClass);
         $command->method('getName')->willReturn($commandName);
@@ -217,6 +215,11 @@ class TestCronWithoutParams implements CronJobInterface
     public function getLockTTL(): float
     {
         return 0;
+    }
+
+    public function __toString(): string
+    {
+        return '';
     }
 }
 
