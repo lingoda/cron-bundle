@@ -8,26 +8,18 @@ use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Lingoda\CronBundle\Repository\CronDatesRepository;
 
-/**
- * @ORM\Entity(repositoryClass=CronDatesRepository::class)
- * @ORM\Table(name="cron_dates")
- */
+#[ORM\Table(name: 'cron_dates')]
+#[ORM\Entity(repositoryClass: CronDatesRepository::class)]
 class CronDates
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string')]
     private string $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private DateTimeInterface $lastTriggeredAt;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?DateTimeInterface $lastStartedAt = null;
 
     public function __construct(string $id, DateTimeInterface $triggeredAt)
