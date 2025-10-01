@@ -7,7 +7,7 @@
         <service id="lingoda_cron.due_cron_jobs_trigger" class="Lingoda\CronBundle\Cron\DueCronJobsTrigger">
             <argument type="service" id="lingoda_cron.cron_job_start_time_repository" />
             <argument type="service" id="messenger.default_bus" />
-            <argument type="tagged_iterator" tag="lingoda_cron.cron_job" />
+            <argument type="tagged_iterator" tag="lingoda_cron.cron_job" index-by="service_id"/>
         </service>
         <service id="Lingoda\CronBundle\Cron\DueCronJobsTrigger" alias="lingoda_cron.due_cron_jobs_trigger" />
 
@@ -28,12 +28,12 @@
 
         <service id="Lingoda\CronBundle\Command\ListCronJobsCommand">
             <tag name="console.command" />
-            <argument type="tagged_iterator" tag="lingoda_cron.cron_job" />
+            <argument type="tagged_iterator" tag="lingoda_cron.cron_job" index-by="service_id"/>
             <argument type="service" id="lingoda_cron.cron_job_start_time_repository" />
         </service>
 
         <service id="lingoda_cron.cron_job_runner" class="Lingoda\CronBundle\Cron\CronJobRunner">
-            <argument type="tagged_locator" tag="lingoda_cron.cron_job" />
+            <argument type="tagged_locator" tag="lingoda_cron.cron_job" index-by="service_id"/>
             <argument type="service" id="lock.default.factory" />
             <argument type="service" id="lingoda_cron.cron_job_start_time_repository" />
         </service>

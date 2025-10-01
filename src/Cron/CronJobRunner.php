@@ -16,6 +16,7 @@ use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 use ReflectionNamedType;
 use Symfony\Component\Lock\LockFactory;
+use Webmozart\Assert\Assert;
 
 class CronJobRunner implements LoggerAwareInterface
 {
@@ -45,6 +46,8 @@ class CronJobRunner implements LoggerAwareInterface
 
         /** @var CronJobInterface $cronjob */
         $cronjob = $this->cronJobLocator->get($cronJobId);
+        Assert::isInstanceOf($cronjob, CronJobInterface::class);
+
         $lock = $this->lockFactory->createLock($cronJobId, $cronjob->getLockTTL());
 
         if (!$lock->acquire()) {
@@ -57,7 +60,7 @@ class CronJobRunner implements LoggerAwareInterface
             $record = $this->cronDatesRepo->find($cronJobId);
             $lastStartedAt = $record ? $record->getLastStartedAt() : null;
 
-            $this->setParameters($cronjob, $parameters);
+            $this->setParameters($cronjob, $cronJobId, $parameters);
 
             $this->recordStartTime($cronJobId, $record);
 
@@ -106,7 +109,7 @@ class CronJobRunner implements LoggerAwareInterface
     /**
      * @param array<string, mixed> $parameters
      */
-    private function setParameters(CronJobInterface $cronJob, array $parameters = []): void
+    private function setParameters(CronJobInterface $cronJob, string $cronJobId, array $parameters = []): void
     {
         if (empty($parameters) || !method_exists($cronJob, 'setParameters')) {
             return;
@@ -123,7 +126,7 @@ class CronJobRunner implements LoggerAwareInterface
             /** @var ReflectionNamedType|null $reflectionType */
             $reflectionType = $parameter->getType();
             if ($reflectionType === null || $reflectionType->getName() !== 'string' || !$reflectionType->allowsNull()) {
-                throw new \RuntimeException(sprintf('"%s::setParameters()" all parameters should be nullable strings as they come from CLI arguments.', \get_class($cronJob)));
+                throw new \RuntimeException(sprintf('"%s::setParameters()" all parameters should be nullable strings as they come from CLI arguments.', $cronJobId));
             }
 
             $paramName = $parameter->getName();

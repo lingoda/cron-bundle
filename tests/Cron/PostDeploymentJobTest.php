@@ -73,7 +73,7 @@ class PostDeploymentJobTest extends TestCase
         $cronJobTrigger = (new DueCronJobsTrigger(
             $this->repository,
             $this->messageBus,
-            [new RunOnce()],
+            [RunOnce::class => new RunOnce()],
         ));
 
         $cronJobTrigger->trigger();

@@ -26,7 +26,7 @@ class DueCronJobsTrigger implements LoggerAwareInterface
     private bool $shouldStop = false;
 
     /**
-     * @param CronJobInterface[] $cronJobs
+     * @param iterable<string, CronJobInterface> $cronJobs
      * @phpstan-param iterable<CronJobInterface> $cronJobs
      */
     public function __construct(
@@ -46,9 +46,7 @@ class DueCronJobsTrigger implements LoggerAwareInterface
 
     public function trigger(): void
     {
-        foreach ($this->cronJobs as $cronJob) {
-            $cronJobId = \get_class($cronJob);
-
+        foreach ($this->cronJobs as $cronJobId => $cronJob) {
             $record = $this->cronDatesRepo->find($cronJobId);
             $lastTriggeredAt = $record ? $record->getLastTriggeredAt() : null;
             if (!$cronJob->shouldRun($lastTriggeredAt)) {
@@ -57,7 +55,7 @@ class DueCronJobsTrigger implements LoggerAwareInterface
 
             $this->recordTriggerTime($cronJobId, $record);
 
-            $this->messageBus->dispatch(CronJobDueMessage::createFromCronJobInstance($cronJob));
+            $this->messageBus->dispatch(new CronJobDueMessage($cronJobId));
             $this->logCronJobWasTriggered($cronJobId);
 
             if ($this->shouldStop) {
