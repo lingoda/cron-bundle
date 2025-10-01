@@ -23,7 +23,7 @@ class CronJobRunner implements LoggerAwareInterface
     private ContainerInterface $cronJobLocator;
     private LockFactory $lockFactory;
     private CronDatesRepository $cronDatesRepo;
-    private ?LoggerInterface $logger;
+    private ?LoggerInterface $logger = null;
 
     public function __construct(
         ContainerInterface $cronJobLocator,

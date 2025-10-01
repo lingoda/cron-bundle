@@ -22,7 +22,7 @@ class DueCronJobsTrigger implements LoggerAwareInterface
      */
     private iterable $cronJobs;
 
-    private ?LoggerInterface $logger;
+    private ?LoggerInterface $logger = null;
     private bool $shouldStop = false;
 
     /**
