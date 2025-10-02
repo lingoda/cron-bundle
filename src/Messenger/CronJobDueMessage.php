@@ -11,7 +11,7 @@ class CronJobDueMessage
     private string $cronJobId;
 
     /**
-     * @param class-string $cronJobId
+     * @param string $cronJobId
      */
     public function __construct(string $cronJobId)
     {

@@ -5,7 +5,6 @@ declare(strict_types = 1);
 namespace Lingoda\CronBundle\Command;
 
 use Exception;
-use Lingoda\CronBundle\Cron\CronJobInterface;
 use Lingoda\CronBundle\Cron\CronJobRunner;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -65,8 +64,6 @@ class RunCronJobCommand extends Command
     private function setCronJobId(array|string|null $id): void
     {
         Assert::string($id);
-        Assert::classExists($id);
-        Assert::subclassOf($id, CronJobInterface::class);
 
         $this->cronJobId = ltrim($id, '\\');
     }

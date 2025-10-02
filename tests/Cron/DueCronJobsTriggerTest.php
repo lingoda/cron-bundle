@@ -62,12 +62,12 @@ class DueCronJobsTriggerTest extends TestCase
         $this->messageBus
             ->expects(self::exactly(2))
             ->method('dispatch')
-            ->with(self::callback(function ($arg) use ($cronJob1, $cronJob3): bool {
+            ->with(self::callback(function ($arg) use ($cronJob1): bool {
                 static $counter = 0;
 
                 $messages = [
-                    CronJobDueMessage::createFromCronJobInstance($cronJob1),
-                    CronJobDueMessage::createFromCronJobInstance($cronJob3),
+                    new CronJobDueMessage(get_class($cronJob1)),
+                    new CronJobDueMessage('cron_job3_service_id'),
                 ];
 
                 $this->assertInstanceOf(CronJobDueMessage::class, $arg);
@@ -75,12 +75,12 @@ class DueCronJobsTriggerTest extends TestCase
 
                 return true;
             }))
-            ->willReturnCallback(static function () use ($cronJob1, $cronJob3): Envelope {
+            ->willReturnCallback(static function () use ($cronJob1): Envelope {
                 static $counter = 0;
 
                 $messages = [
-                    CronJobDueMessage::createFromCronJobInstance($cronJob1),
-                    CronJobDueMessage::createFromCronJobInstance($cronJob3),
+                    new CronJobDueMessage(get_class($cronJob1)),
+                    new CronJobDueMessage('cron_job3_service_id'),
                 ];
 
                 return Envelope::wrap($messages[$counter++]);
@@ -90,7 +90,11 @@ class DueCronJobsTriggerTest extends TestCase
         (new DueCronJobsTrigger(
             $this->repository,
             $this->messageBus,
-            [$cronJob1, $cronJob2, $cronJob3]
+            [
+                get_class($cronJob1) => $cronJob1,
+                'cron_job2_service_id' => $cronJob2,
+                'cron_job3_service_id' => $cronJob3,
+            ]
         ))->trigger();
     }
 }

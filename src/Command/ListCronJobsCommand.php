@@ -24,7 +24,7 @@ class ListCronJobsCommand extends Command
     private const FORMAT = 'Y-m-d H:i:s \U\T\C';
 
     /**
-     * @param iterable<int, CronJobInterface> $cronJobs
+     * @param iterable<string, CronJobInterface> $cronJobs
      */
     public function __construct(
         private readonly iterable $cronJobs,
@@ -50,8 +50,7 @@ class ListCronJobsCommand extends Command
          * }> $cronJobs
          */
         $cronJobs = [];
-        foreach ($this->cronJobs as $cronJob) {
-            $cronJobId = \get_class($cronJob);
+        foreach ($this->cronJobs as $cronJobId => $cronJob) {
             $record = $this->cronDatesRepository->find($cronJobId);
             $lastTriggeredAt = $record ? $record->getLastTriggeredAt() : null;
             $cronExpression = (string) $cronJob;
