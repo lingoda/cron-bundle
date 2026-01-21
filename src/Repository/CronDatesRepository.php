@@ -20,7 +20,7 @@ class CronDatesRepository extends EntityRepository
 
     public function save(CronDates $cronDates): void
     {
-        $this->_em->persist($cronDates);
-        $this->_em->flush();
+        $this->getEntityManager()->persist($cronDates);
+        $this->getEntityManager()->flush();
     }
 }
