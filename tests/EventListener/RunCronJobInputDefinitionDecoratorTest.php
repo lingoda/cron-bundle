@@ -61,7 +61,7 @@ final class RunCronJobInputDefinitionDecoratorTest extends TestCase
 
         $event = $this->createConsoleCommandEvent($command);
 
-        /** @var MockObject|InputInterface $inputMock */
+        /** @var MockObject&InputInterface $inputMock */
         $inputMock = $event->getInput();
         $inputMock
             ->expects(self::once())
@@ -85,7 +85,7 @@ final class RunCronJobInputDefinitionDecoratorTest extends TestCase
         $helpCommand->expects(self::once())->method('getApplication')->willReturn($application);
         $event = $this->createConsoleCommandEvent($helpCommand);
 
-        /** @var MockObject|InputInterface $inputMock */
+        /** @var MockObject&InputInterface $inputMock */
         $inputMock = $event->getInput();
         $inputMock
             ->method('getArgument')
@@ -113,7 +113,7 @@ final class RunCronJobInputDefinitionDecoratorTest extends TestCase
         $helpCommand->method('getApplication')->willReturn($application);
         $event = $this->createConsoleCommandEvent($helpCommand);
 
-        /** @var MockObject|InputInterface $inputMock */
+        /** @var MockObject&InputInterface $inputMock */
         $inputMock = $event->getInput();
         $inputMock
             ->method('getArgument')
@@ -136,17 +136,28 @@ final class RunCronJobInputDefinitionDecoratorTest extends TestCase
     public function testRunningCronWithParamsExtendsCommandInputDefinition(): void
     {
         $command = $this->createCommand(self::COMMAND);
+        $expectedCalls = [
+            ['param1', null, InputOption::VALUE_OPTIONAL, sprintf('Optional argument of "%s" Cron', TestCronWithParams::class)],
+            ['param-with-camel-case', null, InputOption::VALUE_OPTIONAL, sprintf('Optional argument of "%s" Cron', TestCronWithParams::class)],
+        ];
+        $callIndex = 0;
         $command->expects(self::exactly(2))
             ->method('addOption')
-            ->withConsecutive(
-                ['param1', null, InputOption::VALUE_OPTIONAL, sprintf('Optional argument of "%s" Cron', TestCronWithParams::class), null],
-                ['param-with-camel-case', null, InputOption::VALUE_OPTIONAL, sprintf('Optional argument of "%s" Cron', TestCronWithParams::class), null]
-            )
+            ->willReturnCallback(function (string $name, ?string $shortcut, ?int $mode, string $description) use (&$callIndex, $expectedCalls, $command): Command {
+                [$expectedName, $expectedShortcut, $expectedMode, $expectedDescription] = $expectedCalls[$callIndex];
+                self::assertSame($expectedName, $name);
+                self::assertSame($expectedShortcut, $shortcut);
+                self::assertSame($expectedMode, $mode);
+                self::assertSame($expectedDescription, $description);
+                $callIndex++;
+
+                return $command;
+            })
         ;
 
         $event = $this->createConsoleCommandEvent($command);
 
-        /** @var MockObject|InputInterface $inputMock */
+        /** @var MockObject&InputInterface $inputMock */
         $inputMock = $event->getInput();
         $inputMock
             ->method('getArgument')
@@ -169,13 +180,13 @@ final class RunCronJobInputDefinitionDecoratorTest extends TestCase
     /**
      * @return Generator<class-string<TestCronWithoutParams>, array{class-string<CronJobInterface>, InvokedCount}>
      */
-    public function helpDecorationData(): Generator
+    public static function helpDecorationData(): Generator
     {
         // has no parameter so addOption should not be called
-        yield TestCronWithoutParams::class => [TestCronWithoutParams::class, self::exactly(0)];
+        yield TestCronWithoutParams::class => [TestCronWithoutParams::class, new InvokedCount(0)];
 
         // has 2 parameters so addOption should be called twice
-        yield TestCronWithParams::class => [TestCronWithParams::class, self::exactly(2)];
+        yield TestCronWithParams::class => [TestCronWithParams::class, new InvokedCount(2)];
     }
 
     private function createConsoleCommandEvent(Command $command): ConsoleCommandEvent

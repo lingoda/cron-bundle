@@ -21,7 +21,7 @@ final class StringUtilTest extends TestCase
     /**
      * @return Generator<array{string, string}>
      */
-    public function stringToDashData(): Generator
+    public static function stringToDashData(): Generator
     {
         yield ['user', 'user'];
         yield ['userName', 'user-name'];

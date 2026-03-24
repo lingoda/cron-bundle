@@ -183,7 +183,7 @@ class CronJobRunnerTest extends TestCase
     /**
      * @return Generator<string, array{CronJobInterface}>
      */
-    public function nonNullableParameterThrowsExceptionData(): Generator
+    public static function nonNullableParameterThrowsExceptionData(): Generator
     {
         yield 'parameters should be nullable' => [new TestCronWithNoNullableParam()];
         yield 'parameters should have type string' => [new TestCronWithInvalidTypeParam()];
