@@ -3,7 +3,7 @@ on:
   pull_request: ~
   push:
     branches:
-      - master
+      - main
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
@@ -13,39 +13,43 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        install-args: ['', --prefer-lowest]
+        php: ['8.3', '8.4']
+        symfony: ['6.4', '7.3', '8.0']
       fail-fast: false
     steps:
-      - name: cancel
-        uses: styfle/cancel-workflow-action@0.12.1
+      -   name: cancel
+          uses: styfle/cancel-workflow-action@0.12.1
 
-      - name: checkout
-        uses: actions/checkout@v4
+      -   name: checkout
+          if: ${{ !cancelled() }}
+          uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@2.19.0
-        with:
-          php-version: '8.1'
-          extensions: apcu, redis
+      -   name: Setup PHP
+          if: ${{ !cancelled() }}
+          uses: shivammathur/setup-php@v2
+          with:
+              php-version: ${{ matrix.php }}
+              extensions: pcntl, zip
 
-      - name: composer
-        uses: ramsey/composer-install@3.1.0
-        with:
-          composer-options: "--prefer-dist --classmap-authoritative"
+      -   name: Composer update on PHP ${{ matrix.php }} and Symfony ${{ matrix.symfony }}
+          if: ${{ !cancelled() }}
+          run: |
+            composer require --no-update symfony/flex
+            composer config --no-plugins allow-plugins.symfony/flex true
+            SYMFONY_REQUIRE=${{ matrix.symfony }} composer install --classmap-authoritative --prefer-dist
 
-      - name: phpstan-cache
-        uses: actions/cache@v4
-        with:
-          key: phpstan-${{ github.ref }}-${{ github.sha }}
-          path: .phpstan-cache
-          restore-keys: |
-            phpstan-${{ github.ref }}-
-            phpstan-
+      -   name: Lint
+          if: ${{ !cancelled() }}
+          run: composer validate
 
-      - name: phpstan
-        run: |
-          vendor/bin/phpstan analyze -c ./phpstan.neon
-          vendor/bin/phpstan analyze -c ./phpstan.test.neon
+      -   name: Static analysis on src with PHPStan
+          if: ${{ !cancelled() }}
+          run: vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=1G --no-progress --no-interaction
 
-      - name: phpunit
-        run: vendor/bin/phpunit
+      -   name: Static analysis on tests with PHPStan
+          if: ${{ !cancelled() }}
+          run: vendor/bin/phpstan analyse -c phpstan.test.neon --memory-limit=1G --no-progress --no-interaction
+
+      -   name: Run unit tests
+          if: ${{ !cancelled() }}
+          run: vendor/bin/phpunit

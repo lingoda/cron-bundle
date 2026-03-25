@@ -8,7 +8,7 @@ use Throwable;
 
 class UnrecognizedCronJobException extends RuntimeException
 {
-    public function __construct(string $cronJobId, Throwable $previous = null)
+    public function __construct(string $cronJobId, ?Throwable $previous = null)
     {
         parent::__construct("$cronJobId is not a recognized cron job instance", $previous);
     }

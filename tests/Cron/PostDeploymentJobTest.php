@@ -18,12 +18,12 @@ use Symfony\Component\Messenger\MessageBusInterface;
 class PostDeploymentJobTest extends TestCase
 {
     /**
-     * @var CronDatesRepository|MockObject
+     * @var CronDatesRepository&MockObject
      */
     private $repository;
 
     /**
-     * @var MockObject|MessageBusInterface
+     * @var MockObject&MessageBusInterface
      */
     private $messageBus;
 
