@@ -34,8 +34,24 @@ class CronJobImplementationTest extends TestCase
         $c = new class() extends ScheduleBasedCronJob {
             public function getSchedule(): Schedule
             {
-                $now = CarbonImmutable::now();
-                $tenMinutesLater = $now->addMinutes(10);
+                return Schedule::everyHour(CarbonImmutable::now()->minute);
+            }
+
+            public function run(?DateTimeInterface $lastStartedAt): void
+            {
+            }
+        };
+
+        // Job is due now but last triggered 2 hours ago — catch-up should fire
+        $this->assertTrue($c->shouldRun(CarbonImmutable::now()->subHours(2)));
+    }
+
+    public function testNewJobShouldNotRunWhenNotDue(): void
+    {
+        $c = new class() extends ScheduleBasedCronJob {
+            public function getSchedule(): Schedule
+            {
+                $tenMinutesLater = CarbonImmutable::now()->addMinutes(10);
 
                 return Schedule::everyHour($tenMinutesLater->minute);
             }
@@ -45,7 +61,8 @@ class CronJobImplementationTest extends TestCase
             }
         };
 
-        $this->assertTrue($c->shouldRun());
+        // New job (null lastTriggeredAt) that is NOT currently due should wait
+        $this->assertFalse($c->shouldRun());
     }
 
     public function testItShouldNotRun(): void
