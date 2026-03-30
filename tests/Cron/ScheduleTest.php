@@ -50,13 +50,6 @@ class ScheduleTest extends TestCase
 
         $s = Schedule::everyMonth($now->day, $now->hour, $now->minute);
         $this->assertTrue($s->isDue($now->subMonth()));
-
-        $s = Schedule::everyHour($now->addMinutes(10)->minute);
-        $this->assertTrue($s->isDue());
-
-        $nextHour = $now->addHour();
-        $s = Schedule::everyDay($nextHour->hour, $nextHour->minute);
-        $this->assertTrue($s->isDue());
     }
 
     public function testItShouldNotBeDue(): void
@@ -74,6 +67,37 @@ class ScheduleTest extends TestCase
 
         $s = Schedule::everyMonth($nextDay->day, $nextDay->hour, $nextDay->minute);
         $this->assertFalse($s->isDue($nextDay->subMonth()));
+
+        // Jobs scheduled for the future should not be due even with no prior trigger
+        $s = Schedule::everyHour($tenMinutesLater->minute);
+        $this->assertFalse($s->isDue());
+
+        $nextHour = $now->addHour();
+        $s = Schedule::everyDay($nextHour->hour, $nextHour->minute);
+        $this->assertFalse($s->isDue());
+    }
+
+    public function testNewJobShouldNotFireImmediatelyWhenNotDue(): void
+    {
+        $now = CarbonImmutable::now();
+        $nextWeekday = $now->addWeekday();
+
+        // A weekly job scheduled for a different day should NOT fire when lastTriggeredAt is null (new job)
+        $s = Schedule::everyWeek($nextWeekday->dayOfWeek, $nextWeekday->hour, $nextWeekday->minute);
+        $this->assertFalse($s->isDue(null));
+        $this->assertFalse($s->isDue());
+    }
+
+    public function testNewJobShouldFireImmediatelyWhenDue(): void
+    {
+        $now = CarbonImmutable::now();
+
+        // A job that IS due right now should still fire even with null lastTriggeredAt
+        $s = Schedule::everyMinute();
+        $this->assertTrue($s->isDue(null));
+
+        $s = Schedule::everyDay($now->hour, $now->minute);
+        $this->assertTrue($s->isDue(null));
     }
 
     public function testItShouldNotBeDueTwice(): void

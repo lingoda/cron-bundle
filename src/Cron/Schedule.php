@@ -91,13 +91,13 @@ final class Schedule
 
     public function isDue(?DateTimeInterface $lastTriggeredAt = null): bool
     {
-        if (Carbon::now()->subMinute() <= $lastTriggeredAt) {
+        if ($lastTriggeredAt !== null && Carbon::now()->subMinute() <= $lastTriggeredAt) {
             // CronExpression expects to be called only once per minute
             return false;
         }
 
         // last start time is before previous run date, possibly a missed chance to run the cron (worker off?)
-        if ($lastTriggeredAt < $this->cronExpression->getPreviousRunDate()) {
+        if ($lastTriggeredAt !== null && $lastTriggeredAt < $this->cronExpression->getPreviousRunDate()) {
             return true;
         }
 
