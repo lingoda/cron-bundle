@@ -4,8 +4,10 @@ declare(strict_types = 1);
 
 namespace Lingoda\CronBundle\Tests\Cron;
 
+use Carbon\CarbonImmutable;
 use Lingoda\CronBundle\Cron\CronJobInterface;
 use Lingoda\CronBundle\Cron\DueCronJobsTrigger;
+use Lingoda\CronBundle\Entity\CronDates;
 use Lingoda\CronBundle\Messenger\CronJobDueMessage;
 use Lingoda\CronBundle\Repository\CronDatesRepository;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -58,7 +60,8 @@ class DueCronJobsTriggerTest extends TestCase
         $cronJob2->method('shouldRun')->willReturn(false);
         $cronJob3->method('shouldRun')->willReturn(true);
 
-        $this->repository->method('find')->willReturn(null);
+        $this->repository->expects(self::once())->method('findAllIndexedById')->willReturn([]);
+        $this->repository->expects(self::exactly(3))->method('find')->willReturn(null);
         $this->messageBus
             ->expects(self::exactly(2))
             ->method('dispatch')
@@ -96,5 +99,43 @@ class DueCronJobsTriggerTest extends TestCase
                 'cron_job3_service_id' => $cronJob3,
             ]
         ))->trigger();
+    }
+
+    public function testItUsesTheStoredTriggerDateAndUpdatesTheExistingRecord(): void
+    {
+        $lastTriggeredAt = new CarbonImmutable('2025-01-01 10:00:00');
+        $record = new CronDates('due_job', $lastTriggeredAt);
+
+        $dueJob = $this->createMock(CronJobInterface::class);
+        $dueJob->expects(self::once())->method('shouldRun')->with($lastTriggeredAt)->willReturn(true);
+        $newJob = $this->createMock(CronJobInterface::class);
+        $newJob->expects(self::once())->method('shouldRun')->with(null)->willReturn(false);
+
+        $this->repository->expects(self::once())->method('findAllIndexedById')->willReturn(['due_job' => $record]);
+        $this->repository->expects(self::once())->method('save')->with(self::identicalTo($record));
+        $this->messageBus->expects(self::once())->method('dispatch')->willReturn(Envelope::wrap(new CronJobDueMessage('due_job')));
+
+        (new DueCronJobsTrigger(
+            $this->repository,
+            $this->messageBus,
+            ['due_job' => $dueJob, 'new_job' => $newJob]
+        ))->trigger();
+
+        self::assertGreaterThan($lastTriggeredAt, $record->getLastTriggeredAt());
+    }
+
+    public function testItUpdatesTheRowTheDatabaseMatchesWhenTheIdDiffersInCase(): void
+    {
+        $record = new CronDates('App\\FooJob', new CarbonImmutable('2025-01-01 10:00:00'));
+
+        $job = $this->createMock(CronJobInterface::class);
+        $job->method('shouldRun')->willReturn(true);
+
+        $this->repository->method('findAllIndexedById')->willReturn(['App\\FooJob' => $record]);
+        $this->repository->expects(self::once())->method('find')->with('App\\FOOJob')->willReturn($record);
+        $this->repository->expects(self::once())->method('save')->with(self::identicalTo($record));
+        $this->messageBus->method('dispatch')->willReturn(Envelope::wrap(new CronJobDueMessage('App\\FOOJob')));
+
+        (new DueCronJobsTrigger($this->repository, $this->messageBus, ['App\\FOOJob' => $job]))->trigger();
     }
 }

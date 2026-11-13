@@ -33,26 +33,12 @@ class ListCronJobsCommandTest extends TestCase
 
         $tester = new CommandTester($command);
 
-        $cronDatesRepository->expects($this->exactly(3))->method('find')
-            ->with(self::callback(function ($arg): bool {
-                static $counter = 0;
-                $expected = [TestJob::class, 'test_job_2', 'test_job_3'];
-
-                $this->assertEquals($expected[$counter++], $arg);
-
-                return true;
-            }))
-            ->willReturnCallback(static function () {
-                static $counter = 0;
-
-                $expected = [
-                    new CronDates(TestJob::class, new CarbonImmutable('2025-01-01')),
-                    new CronDates('test_job_2', new CarbonImmutable('2025-01-02')),
-                    new CronDates('test_job_3', new CarbonImmutable('2025-01-03')),
-                ];
-
-                return $expected[$counter++];
-            });
+        $cronDatesRepository->expects($this->once())->method('findAllIndexedById')->willReturn([
+            TestJob::class => new CronDates(TestJob::class, new CarbonImmutable('2025-01-01')),
+            'test_job_2' => new CronDates('test_job_2', new CarbonImmutable('2025-01-02')),
+            'test_job_3' => new CronDates('test_job_3', new CarbonImmutable('2025-01-03')),
+        ]);
+        $cronDatesRepository->expects($this->never())->method('find');
 
         $tester->execute([]);
 
