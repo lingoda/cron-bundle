@@ -50,9 +50,9 @@ class ListCronJobsCommand extends Command
          * }> $cronJobs
          */
         $cronJobs = [];
+        $records = $this->cronDatesRepository->findAllIndexedById();
         foreach ($this->cronJobs as $cronJobId => $cronJob) {
-            $record = $this->cronDatesRepository->find($cronJobId);
-            $lastTriggeredAt = $record ? $record->getLastTriggeredAt() : null;
+            $lastTriggeredAt = ($records[$cronJobId] ?? null)?->getLastTriggeredAt();
             $cronExpression = (string) $cronJob;
             $schedule = !empty($cronExpression) ? $cronExpression : null;
             $nextTriggerAt = $schedule ? (new CronExpression($schedule))->getNextRunDate() : null;

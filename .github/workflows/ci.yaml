@@ -38,6 +38,8 @@ jobs:
             composer require --no-update symfony/flex
             composer config --no-plugins allow-plugins.symfony/flex true
             SYMFONY_REQUIRE=${{ matrix.symfony }} composer install --classmap-authoritative --prefer-dist
+            # Without a lock file, Flex runs its recipes and writes an app skeleton into the checkout.
+            git clean -fdq
 
       -   name: Lint
           if: ${{ !cancelled() }}

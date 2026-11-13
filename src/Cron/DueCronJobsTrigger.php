@@ -46,9 +46,12 @@ class DueCronJobsTrigger implements LoggerAwareInterface
 
     public function trigger(): void
     {
+        $records = $this->cronDatesRepo->findAllIndexedById();
+
         foreach ($this->cronJobs as $cronJobId => $cronJob) {
-            $record = $this->cronDatesRepo->find($cronJobId);
-            $lastTriggeredAt = $record ? $record->getLastTriggeredAt() : null;
+            // The id column can ignore case and the array key does not: on a miss, let the database match.
+            $record = $records[$cronJobId] ?? $this->cronDatesRepo->find($cronJobId);
+            $lastTriggeredAt = $record?->getLastTriggeredAt();
             if (!$cronJob->shouldRun($lastTriggeredAt)) {
                 continue;
             }

@@ -54,10 +54,10 @@ class PostDeploymentJobTest extends TestCase
 
         $this->repository
             ->expects(self::exactly(2))
-            ->method('find')
+            ->method('findAllIndexedById')
             ->willReturn(
-                null,
-                $startTime
+                [],
+                [RunOnce::class => $startTime]
             )
         ;
 

@@ -18,6 +18,14 @@ class CronDatesRepository extends EntityRepository
         parent::__construct($em, $em->getClassMetadata(CronDates::class));
     }
 
+    /**
+     * @return array<string, CronDates>
+     */
+    public function findAllIndexedById(): array
+    {
+        return $this->createQueryBuilder('c', 'c.id')->getQuery()->getResult();
+    }
+
     public function save(CronDates $cronDates): void
     {
         $this->getEntityManager()->persist($cronDates);
